@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Integração interna da loja</title>
+<style>
+  :root { color-scheme: light dark; --fundo: #f6f5f1; --texto: #1f2328; --suave: #5b6168; --caixa: #ffffff; --borda: #d6d3cb; --acao: #2d5fd0; --acao-texto: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fundo: #17191c; --texto: #e8e6e1; --suave: #a3a8ae; --caixa: #202327; --borda: #3a3e44; --acao: #7ea2f5; --acao-texto: #10131a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--texto); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 620px; margin: 0 auto; padding: 56px 16px; }
+  h1 { font-size: 26px; line-height: 1.25; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  p { margin: 0 0 14px; }
+  .en { color: var(--suave); font-size: 15px; }
+  section { margin-top: 32px; padding: 20px; background: var(--caixa); border: 1px solid var(--borda); border-radius: 10px; }
+  pre { margin: 12px 0; padding: 12px; border: 1px dashed var(--borda); border-radius: 8px; font: 15px/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; word-break: break-all; }
+  button { font: inherit; padding: 10px 18px; border: 0; border-radius: 8px; background: var(--acao); color: var(--acao-texto); cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--texto); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Integração interna da loja</h1>
+  <p>Esta página é o endereço de retorno da autorização do Mercado Livre para uma integração de uso interno de uma loja. Quem chegou aqui por acaso não precisa fazer nada.</p>
+  <p class="en" lang="en">This page is the Mercado Libre authorization return address for a store's internal-use integration. If you got here by accident, there is nothing to do.</p>
+
+  <section id="recebido" hidden>
+    <h2>Autorização recebida</h2>
+    <p>Copie o código abaixo. Ele vale por poucos minutos e só funciona uma vez.</p>
+    <pre id="codigo"></pre>
+    <button id="copiar" type="button">Copiar código</button>
+  </section>
+
+  <section id="recusado" hidden>
+    <h2>A autorização não foi concluída</h2>
+    <p>O Mercado Livre devolveu este aviso:</p>
+    <pre id="aviso"></pre>
+  </section>
+</main>
+<script>
+  (function () {
+    var dados = new URLSearchParams(window.location.search);
+    var codigo = dados.get('code');
+    var erro = dados.get('error');
+
+    if (codigo) {
+      document.getElementById('codigo').textContent = codigo;
+      document.getElementById('recebido').hidden = false;
+      var botao = document.getElementById('copiar');
+      botao.addEventListener('click', function () {
+        navigator.clipboard.writeText(codigo).then(function () {
+          botao.textContent = 'Copiado';
+        }, function () {
+          botao.textContent = 'Selecione e copie à mão';
+        });
+      });
+    } else if (erro) {
+      var detalhe = dados.get('error_description');
+      document.getElementById('aviso').textContent = detalhe ? erro + ': ' + detalhe : erro;
+      document.getElementById('recusado').hidden = false;
+    }
+
+    // Tira o código da barra de endereço para ele não ficar no histórico.
+    if (codigo || erro) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  })();
+</script>
+</body>
+</html>
